@@ -8,6 +8,7 @@ google-generativeai==0.8.3
 
 # Base de données géospatiale
 psycopg2-binary==2.9.10
+pg8000==1.31.2
 sqlalchemy==2.0.36
 geoalchemy2==0.15.2
 
