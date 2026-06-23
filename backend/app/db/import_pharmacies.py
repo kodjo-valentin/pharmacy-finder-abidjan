@@ -7,16 +7,22 @@ load_dotenv()
 
 # Chemin vers le fichier GeoJSON (depuis backend/app/db/ vers data/raw/)
 GEOJSON_PATH = os.path.join(
-    os.path.dirname(os.path.abspath(__file__)), "..", "..", "..", "data", "raw", "pharmacies_abidjan.geojson"
+    os.path.dirname(os.path.abspath(
+        __file__)), "..", "..", "..", "data", "raw", "pharmacies_abidjan.geojson"
 )
 
 DB_PASSWORD = os.getenv("DB_PASSWORD")
 
 # Utilise pg8000 (driver pur Python) au lieu de psycopg2 pour eviter
 # le bug d'encodage Windows rencontre avec psycopg2
-DATABASE_URL = f"postgresql+pg8000://postgres:{DB_PASSWORD}@localhost:5432/pharmacy_finder"
+DATABASE_URL = "postgresql+pg8000://neondb_owner:npg_lBGWws0nci2e@ep-dawn-violet-asxsxd9h-pooler.c-4.eu-central-1.aws.neon.tech/neondb?sslmode=require&channel_binding=require"
 
-engine = create_engine(DATABASE_URL)
+
+DATABASE_URL = os.getenv("DATABASE_URL")
+if DATABASE_URL and "?sslmode=require" in DATABASE_URL:
+    DATABASE_URL = DATABASE_URL.split("?")[0]
+
+engine = create_engine(DATABASE_URL, connect_args={"ssl_context": True})
 
 
 def import_pharmacies():

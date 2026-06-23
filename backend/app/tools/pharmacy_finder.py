@@ -6,8 +6,13 @@ from geopy.geocoders import Nominatim
 load_dotenv()
 
 DB_PASSWORD = os.getenv("DB_PASSWORD")
-DATABASE_URL = f"postgresql+pg8000://postgres:{DB_PASSWORD}@localhost:5432/pharmacy_finder"
-engine = create_engine(DATABASE_URL)
+DATABASE_URL = f"postgresql+pg8000://neondb_owner:npg_lBGWws0nci2e@ep-dawn-violet-asxsxd9h-pooler.c-4.eu-central-1.aws.neon.tech/neondb?sslmode=require&channel_binding=require"
+
+DATABASE_URL = os.getenv("DATABASE_URL")
+if DATABASE_URL and "?sslmode=require" in DATABASE_URL:
+    DATABASE_URL = DATABASE_URL.split("?")[0]
+
+engine = create_engine(DATABASE_URL, connect_args={"ssl_context": True})
 
 # Geocodeur Nominatim - user_agent obligatoire (n'importe quel nom unique)
 geolocator = Nominatim(user_agent="pharmacy_finder_app_valentin")
@@ -61,7 +66,8 @@ def find_nearest_pharmacies(quartier: str, rayon_km: float = 1.0, limite: int = 
     """)
 
     with engine.connect() as conn:
-        result = conn.execute(query, {"lon": lon, "lat": lat, "rayon": rayon_metres, "limite": limite})
+        result = conn.execute(
+            query, {"lon": lon, "lat": lat, "rayon": rayon_metres, "limite": limite})
         rows = result.fetchall()
 
     pharmacies = [
