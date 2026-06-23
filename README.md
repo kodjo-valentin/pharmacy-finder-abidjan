@@ -1,4 +1,4 @@
-# 💊 Pharmacy Finder — Abidjan
+# 💊 Pharmacy Finder Abidjan
 
 Agent géospatial intelligent permettant de localiser les pharmacies les plus proches d'un quartier d'Abidjan, en langage naturel, avec visualisation interactive sur fond satellite.
 
@@ -133,7 +133,7 @@ uvicorn app.main:app --reload
 
 ## 👤 Auteur
 
-Valentin KODJO — Étudiant en Licence Professionnelle Géomatique et Stratégies Spatiales, Université Félix Houphouët-Boigny (Abidjan).
+Valentin KODJO Étudiant en Licence Professionnelle Géomatique et Stratégies Spatiales, Université Félix Houphouët-Boigny (Abidjan).
 
 ---
 
