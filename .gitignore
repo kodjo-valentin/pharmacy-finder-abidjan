@@ -1,0 +1,28 @@
+# Environnement et secrets
+.env
+*.env
+__pycache__/
+*.pyc
+
+# Données volumineuses (ne pas versionner les rasters/images bruts)
+data/raw/
+*.tif
+*.tiff
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Node / frontend (si tu ajoutes du JS avec npm plus tard)
+node_modules/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Environnements virtuels Python
+venv/
+env/
+.venv/
+
+# Logs
+*.log

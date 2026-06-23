@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Pharmacy Finder Abidjan</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.css" />
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+        }
+        #header {
+            padding: 12px;
+            background: #0f5132;
+            color: white;
+        }
+        #chat-box {
+            display: flex;
+            gap: 8px;
+            padding: 10px;
+            background: #f0f0f0;
+        }
+        #question-input {
+            flex: 1;
+            padding: 8px;
+            font-size: 14px;
+        }
+        #ask-button {
+            padding: 8px 16px;
+            background: #0f5132;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        #response-box {
+            padding: 10px;
+            background: #fff;
+            min-height: 40px;
+            border-bottom: 1px solid #ddd;
+            font-size: 14px;
+        }
+        #map {
+            flex: 1;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="header">
+        <h2 style="margin:0;">Pharmacy Finder Abidjan</h2>
+    </div>
+
+    <div id="chat-box">
+        <input type="text" id="question-input" placeholder="Ex: Trouve-moi une pharmacie près de Cocody dans un rayon de 1km" />
+        <button id="ask-button">Demander</button>
+    </div>
+
+    <div id="response-box">Pose une question pour commencer...</div>
+
+    <div id="map"></div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.js"></script>
+    <script>
+        const map = L.map('map').setView([5.35, -4.0], 12);
+
+        // Fond de carte satellite (Esri World Imagery)
+        L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+            attribution: 'Tiles © Esri — Source: Esri, Maxar, Earthstar Geographics'
+        }).addTo(map);
+
+        // Couche labels (noms de rues/quartiers) par-dessus le satellite, pour la lisibilité
+        L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}', {
+            attribution: ''
+        }).addTo(map);
+
+        let markers = [];
+        let circle = null;
+
+        function clearMap() {
+            markers.forEach(m => map.removeLayer(m));
+            markers = [];
+            if (circle) {
+                map.removeLayer(circle);
+                circle = null;
+            }
+        }
+
+        async function askAgent() {
+            const input = document.getElementById('question-input');
+            const question = input.value.trim();
+            if (!question) return;
+
+            document.getElementById('response-box').innerText = "Recherche en cours...";
+
+            try {
+                const res = await fetch('http://127.0.0.1:8000/ask', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ text: question })
+                });
+                const data = await res.json();
+
+                document.getElementById('response-box').innerText = data.reponse;
+
+                clearMap();
+
+                // Marqueur pour la position recherchee (bleu)
+                if (data.position_recherchee) {
+                    const pos = data.position_recherchee;
+                    const userMarker = L.marker([pos.latitude, pos.longitude], {
+                        icon: L.icon({
+                            iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon.png',
+                            iconSize: [25, 41],
+                            iconAnchor: [12, 41]
+                        })
+                    }).addTo(map);
+                    userMarker.bindPopup(`<b>📍 ${pos.quartier}</b><br>Votre position recherchée`);
+                    markers.push(userMarker);
+
+                    // Buffer transparent representant le rayon de recherche
+                    if (data.rayon_km) {
+                        circle = L.circle([pos.latitude, pos.longitude], {
+                            radius: data.rayon_km * 1000, // conversion km -> metres
+                            color: "#3388ff",
+                            weight: 2,
+                            fillColor: "#3388ff",
+                            fillOpacity: 0.12
+                        }).addTo(map);
+                    }
+
+                    map.setView([pos.latitude, pos.longitude], 14);
+                }
+
+                // Marqueurs pour chaque pharmacie (vert)
+                data.pharmacies.forEach(pharma => {
+                    const marker = L.circleMarker([pharma.latitude, pharma.longitude], {
+                        radius: 9,
+                        color: "#0f5132",
+                        fillColor: "#2ecc71",
+                        fillOpacity: 0.8
+                    }).addTo(map);
+                    marker.bindPopup(`<b>💊 ${pharma.nom}</b><br>Distance : ${pharma.distance_km} km`);
+                    markers.push(marker);
+                });
+
+            } catch (err) {
+                document.getElementById('response-box').innerText = "Erreur : impossible de contacter l'API. Vérifie que le serveur FastAPI tourne.";
+                console.error(err);
+            }
+        }
+
+        document.getElementById('ask-button').addEventListener('click', askAgent);
+        document.getElementById('question-input').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') askAgent();
+        });
+    </script>
+
+</body>
+</html>

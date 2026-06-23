@@ -1,0 +1,22 @@
+# Backend API
+fastapi==0.115.0
+uvicorn==0.32.0
+python-dotenv==1.0.1
+
+# LLM - Google Gemini
+google-generativeai==0.8.3
+
+# Base de données géospatiale
+psycopg2-binary==2.9.10
+sqlalchemy==2.0.36
+geoalchemy2==0.15.2
+
+# Géocodage (Nominatim)
+geopy==2.4.1
+
+# Manipulation de données
+pandas>=2.2.3
+geopandas>=1.0.1
+
+# Validation des données
+pydantic==2.9.2
