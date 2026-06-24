@@ -1,24 +1,26 @@
+from pharmacy_finder import find_nearest_pharmacies
 import os
 import sys
 from dotenv import load_dotenv
 import google.generativeai as genai
 
-TOOLS_PATH = os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "tools"))
+TOOLS_PATH = os.path.abspath(os.path.join(
+    os.path.dirname(os.path.abspath(__file__)), "..", "tools"))
 if TOOLS_PATH not in sys.path:
     sys.path.insert(0, TOOLS_PATH)
 
-from pharmacy_finder import find_nearest_pharmacies
 
 load_dotenv()
 
 api_key = os.getenv("GEMINI_API_KEY")
 if not api_key:
-    raise ValueError("GEMINI_API_KEY n'a pas été trouvée. Vérifie ton fichier .env")
+    raise ValueError(
+        "GEMINI_API_KEY n'a pas ete trouvee. Verifie ton fichier .env")
 
 genai.configure(api_key=api_key)
 
 model = genai.GenerativeModel(
-    "gemini-2.5-flash",
+    "gemini-3.1-flash-lite",
     tools=[find_nearest_pharmacies],
 )
 
@@ -30,22 +32,13 @@ def ask_agent(question: str) -> str:
 
 
 def ask_agent_with_data(question: str) -> dict:
-    """
-    Envoie la question a l'agent ET appelle directement find_nearest_pharmacies
-    pour recuperer les donnees brutes a afficher sur la carte.
-    On utilise une heuristique simple : on demande a Gemini d'extraire
-    le quartier et le rayon mentionnes dans la question, puis on appelle
-    nous-memes la fonction pour etre sur d'avoir les coordonnees exactes.
-    """
     texte_reponse = ask_agent(question)
 
-    # Extraction simple du quartier : on redemande a Gemini de l'extraire
-    # sous forme structuree pour pouvoir refaire l'appel nous-memes
     extraction_prompt = f"""
-    Dans la question suivante, extrait UNIQUEMENT le nom du quartier mentionné
-    et le rayon en km si mentionné (sinon mets 1.0 par défaut).
-    Réponds STRICTEMENT au format : quartier|rayon
-    Exemple de réponse : Cocody|2.0
+    Dans la question suivante, extrait UNIQUEMENT le nom du quartier mentionne
+    et le rayon en km si mentionne (sinon mets 1.0 par defaut).
+    Reponds STRICTEMENT au format : quartier|rayon
+    Exemple de reponse : Cocody|2.0
 
     Question : {question}
     """
