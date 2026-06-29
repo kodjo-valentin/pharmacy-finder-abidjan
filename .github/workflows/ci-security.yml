@@ -1,0 +1,73 @@
+# Emplacement EXACT dans ton repo : .github/workflows/ci-security.yml
+# (à la racine du repo, pas dans backend/)
+
+name: CI - Security Pipeline
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+
+  sast-bandit:
+    name: "SAST - Bandit (analyse statique Python)"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+
+      - name: Installer Bandit
+        run: pip install bandit
+
+      # On scanne uniquement le code applicatif (backend/app)
+      # -ll : ne signale que les severites medium/high (evite le bruit)
+      - name: Scanner backend/app (echoue si faille medium/high)
+        run: bandit -r backend/app -ll
+
+  dependency-audit:
+    name: "Audit dependances - pip-audit"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+
+      - name: Installer les dependances du projet
+        working-directory: backend
+        run: pip install -r requirements.txt
+
+      - name: Installer pip-audit
+        run: pip install pip-audit
+
+      # Echoue automatiquement si une dependance a une CVE connue
+      - name: Auditer requirements.txt
+        working-directory: backend
+        run: pip-audit -r requirements.txt
+
+  docker-build-and-scan:
+    name: "Build image Docker + scan Trivy"
+    runs-on: ubuntu-latest
+    needs: [ sast-bandit, dependency-audit ]
+    steps:
+      - uses: actions/checkout@v4
+
+      # Contexte = ./backend car c'est la que vivent le Dockerfile
+      # et requirements.txt
+      - name: Build de l'image Docker
+        run: docker build -t pharmacy-finder-backend:${{ github.sha }} ./backend
+
+      - name: Scanner l'image avec Trivy
+        uses: aquasecurity/trivy-action@0.24.0
+        with:
+          image-ref: pharmacy-finder-backend:${{ github.sha }}
+          format: table
+          exit-code: '1'              # <- le quality gate : 1 = on bloque
+          severity: 'CRITICAL,HIGH'
+          ignore-unfixed: true

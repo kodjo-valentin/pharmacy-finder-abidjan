@@ -4,5 +4,8 @@
         "./backend/app/tools",
         "./backend/app/agent",
         "./backend/app/db"
-    ]
+    ],
+    "editor.codeActionsOnSave": {
+        "source.organizeImports": "never"
+    }
 }
