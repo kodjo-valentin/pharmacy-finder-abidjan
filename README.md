@@ -1,3 +1,6 @@
+
+![CI](https://github.com/kodjo-valentin/pharmacy-finder-abidjan/actions/workflows/ci-security.yml/badge.svg)
+
 # 💊 Pharmacy Finder Abidjan
 
 Agent géospatial intelligent permettant de localiser les pharmacies les plus proches d'un quartier d'Abidjan, en langage naturel, avec visualisation interactive sur fond satellite.
