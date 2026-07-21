@@ -10,7 +10,8 @@ Agent géospatial intelligent permettant de localiser les pharmacies les plus pr
 Ce projet est né d'une question simple : *est-il possible de construire son propre agent IA capable de comprendre une question géographique en français et de répondre avec des données réelles, affichées sur une carte ?*
 
 Inspiré par les démonstrations d'agents IA géospatiaux d'Esri (AI-Powered Maps), ce projet reproduit le mécanisme de bout en bout — données réelles, calcul spatial précis, et interface conversationnelle — en partant de zéro.
-##lien: https://kodjo-valentin.github.io/pharmacy-finder-abidjan/
+
+## lien: https://kodjo-valentin.github.io/pharmacy-finder-abidjan/
 
 ## ✨ Fonctionnalités
 
